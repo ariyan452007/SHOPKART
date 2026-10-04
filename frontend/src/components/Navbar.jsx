@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { logoutCustomer, getWishlistCount } from '../services/api';
+import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [wishlistCount, setWishlistCount] = useState(null);
+  const { itemCount, clearCart } = useCart();
 
   const fetchWishlistCount = async (signal) => {
     try {
@@ -40,6 +42,7 @@ const Navbar = () => {
     } catch (err) {
       console.error('Logout failed:', err);
     } finally {
+      clearCart();
       navigate('/login', { replace: true });
     }
   };
@@ -47,6 +50,7 @@ const Navbar = () => {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
   const isProductsPage = location.pathname.startsWith('/products');
   const isWishlistPage = location.pathname === '/wishlist';
+  const isCartPage = location.pathname === '/cart';
 
   return (
     <nav className="fixed top-0 w-full z-50 glass border-b border-gray-800">
@@ -82,6 +86,12 @@ const Navbar = () => {
                   className={`text-sm font-medium transition-colors ${isWishlistPage ? 'text-white' : 'text-gray-300 hover:text-white'}`}
                 >
                   Wishlist {wishlistCount !== null ? `(${wishlistCount})` : ''}
+                </Link>
+                <Link
+                  to="/cart"
+                  className={`text-sm font-medium transition-colors ${isCartPage ? 'text-white' : 'text-gray-300 hover:text-white'}`}
+                >
+                  Cart {itemCount > 0 ? `(${itemCount})` : ''}
                 </Link>
                 <button
                   onClick={handleLogout}

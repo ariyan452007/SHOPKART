@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginCustomer, getErrorMessage } from '../services/api';
+import { useCart } from '../context/CartContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { refreshCart } = useCart();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,6 +23,7 @@ const Login = () => {
 
     try {
       await loginCustomer(formData);
+      await refreshCart(); // Ensure cart is fresh for new user
       navigate('/home');
     } catch (err) {
       setError(getErrorMessage(err));

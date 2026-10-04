@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getMe, getProductById, getErrorMessage, getWishlist, toggleWishlist } from '../services/api';
+import { useCart } from '../context/CartContext';
 import axios from 'axios';
 
 const ProductDetails = () => {
@@ -10,7 +11,9 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [cartMsg, setCartMsg] = useState("");
+  const [cartError, setCartError] = useState("");
+  
+  const { addToCart, isPending, getQuantity } = useCart();
   
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -70,10 +73,16 @@ const ProductDetails = () => {
     return () => abortController.abort();
   }, [id, authLoading]);
 
-  const handleAddToCart = () => {
-    if (product?.stock > 0) {
-      setCartMsg("Added to cart (demo)");
-      setTimeout(() => setCartMsg(""), 3000);
+  const handleAddToCart = async () => {
+    setCartError('');
+    const res = await addToCart(product._id);
+    if (!res.success) {
+      if (res.status === 401) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      setCartError(res.message || "Failed to add to cart");
+      setTimeout(() => setCartError(''), 3000);
     }
   };
 
@@ -153,6 +162,9 @@ const ProductDetails = () => {
   if (!product) return null;
 
   const isOutOfStock = product.stock === 0;
+  const quantityInCart = getQuantity(product._id);
+  const pending = isPending(product._id);
+  const isMaxInCart = quantityInCart >= product.stock;
 
   return (
     <div className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 relative">
@@ -173,6 +185,11 @@ const ProductDetails = () => {
             onError={handleImageError}
             className="w-full h-full object-cover min-h-[300px] lg:min-h-full aspect-[4/3] lg:aspect-auto" 
           />
+          {quantityInCart > 0 && (
+            <div className="absolute bottom-4 left-4 bg-indigo-500/90 backdrop-blur text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-lg shadow-black/50">
+              In cart: {quantityInCart}
+            </div>
+          )}
         </div>
         
         <div className="lg:w-1/2 p-8 lg:p-12 flex flex-col">
@@ -209,13 +226,17 @@ const ProductDetails = () => {
             <div className="flex flex-col gap-3">
               <button
                 onClick={handleAddToCart}
-                disabled={isOutOfStock}
-                className="w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-500 text-white hover:bg-indigo-400 hover:shadow-indigo-500/25 active:scale-[0.98] focus:ring-indigo-500"
+                disabled={pending || isOutOfStock || isMaxInCart}
+                className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 border
+                  ${pending || isOutOfStock || isMaxInCart
+                    ? 'bg-gray-800 text-gray-400 border-gray-700 cursor-not-allowed'
+                    : 'bg-indigo-500 text-white hover:bg-indigo-400 border-indigo-400 hover:border-indigo-300'
+                  }`}
               >
-                {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                {pending ? "Adding..." : isOutOfStock ? "Out of Stock" : isMaxInCart ? "Max in cart" : quantityInCart > 0 ? "Add Another" : "Add to Cart"}
               </button>
-              {cartMsg && (
-                <p className="text-center text-green-400 font-medium animate-pulse">{cartMsg}</p>
+              {cartError && (
+                <p className="text-center text-red-400 font-medium">{cartError}</p>
               )}
             </div>
 

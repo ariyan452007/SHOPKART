@@ -41,3 +41,8 @@ export const getWishlist = (signal) => api.get('/wishlist', { signal });
 export const removeFromWishlist = (productId) => api.delete(`/wishlist/${productId}`);
 export const toggleWishlist = (productId) => api.patch(`/wishlist/${productId}/toggle`);
 export const getWishlistCount = (signal) => api.get('/wishlist/count', { signal });
+
+export const getCart = (signal) => api.get('/cart', { signal });
+export const addToCartApi = (productId) => api.post(`/cart/${productId}`);
+export const updateCartQuantity = (productId, quantity) => api.patch(`/cart/${productId}`, { quantity });
+export const removeFromCartApi = (productId) => api.delete(`/cart/${productId}`);

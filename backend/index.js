@@ -28,6 +28,7 @@ app.use(cors({
 
 const productRoutes = require("./routes/product.routes");
 const wishlistRoutes = require("./routes/wishlist.routes");
+const cartRoutes = require("./routes/cart.routes");
 
 /**
  * Mount Routes
@@ -36,6 +37,7 @@ const wishlistRoutes = require("./routes/wishlist.routes");
 app.use("/customers", customerRoutes);
 app.use("/products", productRoutes);
 app.use("/wishlist", wishlistRoutes);
+app.use("/cart", cartRoutes);
 
 /**
  * Root / Health Check Route

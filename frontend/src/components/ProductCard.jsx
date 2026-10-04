@@ -1,13 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toggleWishlist } from '../services/api';
+import { useCart } from '../context/CartContext';
 
 const ProductCard = ({ product, isWishlisted = false, onWishlistChange }) => {
   const navigate = useNavigate();
   const [saved, setSaved] = useState(isWishlisted);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(false);
+  const [cartError, setCartError] = useState('');
   
+  const { addToCart, isPending, getQuantity } = useCart();
+  const quantityInCart = getQuantity(product._id);
+  const pending = isPending(product._id);
+  const isOutOfStock = product.stock === 0;
+  const isMaxInCart = quantityInCart >= product.stock;
+
   const isRequesting = useRef(false);
 
   useEffect(() => {
@@ -16,6 +24,19 @@ const ProductCard = ({ product, isWishlisted = false, onWishlistChange }) => {
 
   const handleImageError = (e) => {
     e.target.src = 'https://via.placeholder.com/600x400?text=No+Image';
+  };
+
+  const handleAddToCart = async () => {
+    setCartError('');
+    const res = await addToCart(product._id);
+    if (!res.success) {
+      if (res.status === 401) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      setCartError(res.message || "Failed to add to cart");
+      setTimeout(() => setCartError(''), 3000);
+    }
   };
 
   const getStockStatus = (stock) => {
@@ -80,6 +101,11 @@ const ProductCard = ({ product, isWishlisted = false, onWishlistChange }) => {
         <div className="absolute top-2 right-2 bg-indigo-500/90 backdrop-blur text-white text-xs font-bold px-2.5 py-1 rounded-md">
           {product.category}
         </div>
+        {quantityInCart > 0 && (
+          <div className="absolute bottom-2 left-2 bg-indigo-500/90 backdrop-blur text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-lg shadow-black/50">
+            In cart: {quantityInCart}
+          </div>
+        )}
       </div>
       <div className="p-5 flex flex-col flex-1">
         <h3 className="text-lg font-semibold text-white mb-1 truncate" title={product.name}>
@@ -99,7 +125,21 @@ const ProductCard = ({ product, isWishlisted = false, onWishlistChange }) => {
             View Details
           </button>
         </div>
-        <div className="mt-4 border-t border-white/10 pt-4">
+        <div className="mt-4 border-t border-white/10 pt-4 flex flex-col gap-2">
+          <button
+            onClick={handleAddToCart}
+            disabled={pending || isOutOfStock || isMaxInCart}
+            className={`w-full flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 border
+              ${pending || isOutOfStock || isMaxInCart
+                ? 'bg-gray-800 text-gray-400 border-gray-700 cursor-not-allowed'
+                : 'bg-indigo-500 text-white border-indigo-400 hover:bg-indigo-400 hover:border-indigo-300'
+              }`}
+          >
+            {pending ? "Adding..." : isOutOfStock ? "Out of Stock" : isMaxInCart ? "Max in cart" : quantityInCart > 0 ? "Add Another" : "Add to Cart"}
+          </button>
+          {cartError && (
+            <p className="text-center text-xs text-red-400">{cartError}</p>
+          )}
           <button
             onClick={handleWishlistClick}
             disabled={isSaving}
@@ -114,7 +154,7 @@ const ProductCard = ({ product, isWishlisted = false, onWishlistChange }) => {
             {isSaving ? "⏳ Saving..." : saved ? "♥ Remove from Wishlist" : "♡ Add to Wishlist"}
           </button>
           {error && (
-            <p className="mt-2 text-center text-xs text-red-400">Unable to save product. Please try again.</p>
+            <p className="text-center text-xs text-red-400">Unable to save product. Please try again.</p>
           )}
         </div>
       </div>
