@@ -35,3 +35,9 @@ export const getProducts = (params = {}, signal) => {
 };
 
 export const getProductById = (id, signal) => api.get(`/products/${id}`, { signal });
+
+export const addToWishlist = (productId) => api.post(`/wishlist/${productId}`);
+export const getWishlist = (signal) => api.get('/wishlist', { signal });
+export const removeFromWishlist = (productId) => api.delete(`/wishlist/${productId}`);
+export const toggleWishlist = (productId) => api.patch(`/wishlist/${productId}/toggle`);
+export const getWishlistCount = (signal) => api.get('/wishlist/count', { signal });

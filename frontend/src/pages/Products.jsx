@@ -18,9 +18,10 @@ const Products = () => {
   const [retryCount, setRetryCount] = useState(0);
   
   const [count, setCount] = useState(0);
+  const [savedIds, setSavedIds] = useState(new Set());
   const navigate = useNavigate();
 
-  // Auth check
+  // Auth check and Wishlist fetch
   useEffect(() => {
     const verifyAuth = async () => {
       try {
@@ -28,6 +29,17 @@ const Products = () => {
         setAuthLoading(false);
       } catch (err) {
         navigate('/login', { replace: true });
+        return;
+      }
+      
+      try {
+        const res = await getWishlist();
+        if (res.data.success && res.data.wishlist) {
+          const ids = new Set(res.data.wishlist.map(w => w._id));
+          setSavedIds(ids);
+        }
+      } catch (err) {
+        // Silent fail for wishlist fetch; grid still works with default state
       }
     };
     verifyAuth();
@@ -69,6 +81,18 @@ const Products = () => {
     
     return () => abortController.abort();
   }, [debouncedSearch, category, sort, authLoading, retryCount]);
+
+  const handleWishlistChange = (productId, isSaved) => {
+    setSavedIds(prev => {
+      const newSet = new Set(prev);
+      if (isSaved) {
+        newSet.add(productId);
+      } else {
+        newSet.delete(productId);
+      }
+      return newSet;
+    });
+  };
 
   if (authLoading) {
     return (
@@ -144,7 +168,7 @@ const Products = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map(p => <ProductCard key={p._id} product={p} />)}
+          {products.map(p => <ProductCard key={p._id} product={p} isWishlisted={savedIds.has(p._id)} onWishlistChange={handleWishlistChange} />)}
         </div>
       )}
     </div>

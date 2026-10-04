@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getMe, getProductById, getErrorMessage } from '../services/api';
+import { getMe, getProductById, getErrorMessage, getWishlist, toggleWishlist } from '../services/api';
 import axios from 'axios';
 
 const ProductDetails = () => {
@@ -11,6 +11,11 @@ const ProductDetails = () => {
   const [error, setError] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [cartMsg, setCartMsg] = useState("");
+  
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const isRequesting = useRef(false);
 
   // Auth check
   useEffect(() => {
@@ -20,10 +25,21 @@ const ProductDetails = () => {
         setAuthLoading(false);
       } catch (err) {
         navigate('/login', { replace: true });
+        return;
+      }
+      
+      try {
+        const res = await getWishlist();
+        if (res.data.success && res.data.wishlist) {
+          const ids = new Set(res.data.wishlist.map(w => w._id));
+          setIsSaved(ids.has(id));
+        }
+      } catch (err) {
+        // silent fail
       }
     };
     verifyAuth();
-  }, [navigate]);
+  }, [navigate, id]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -58,6 +74,38 @@ const ProductDetails = () => {
     if (product?.stock > 0) {
       setCartMsg("Added to cart (demo)");
       setTimeout(() => setCartMsg(""), 3000);
+    }
+  };
+
+  const handleWishlistClick = async () => {
+    if (isRequesting.current) return;
+    
+    isRequesting.current = true;
+    setIsSaving(true);
+    setSaveError(false);
+    
+    try {
+      const res = await toggleWishlist(product._id);
+      
+      const newlySaved = res.data.saved !== undefined ? res.data.saved : !isSaved;
+      setIsSaved(newlySaved);
+      
+      window.dispatchEvent(new Event("wishlist:changed"));
+    } catch (err) {
+      if (err.response?.status === 401) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      
+      if (err.response?.status === 409) {
+        setIsSaved(true);
+        window.dispatchEvent(new Event("wishlist:changed"));
+      } else {
+        setSaveError(true);
+      }
+    } finally {
+      setIsSaving(false);
+      isRequesting.current = false;
     }
   };
 
@@ -168,6 +216,25 @@ const ProductDetails = () => {
               </button>
               {cartMsg && (
                 <p className="text-center text-green-400 font-medium animate-pulse">{cartMsg}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3 mt-3">
+              <button
+                onClick={handleWishlistClick}
+                disabled={isSaving}
+                className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 border
+                  ${isSaving 
+                    ? 'bg-gray-800 text-gray-400 border-gray-700 cursor-not-allowed' 
+                    : isSaved 
+                      ? 'bg-pink-500/20 text-pink-400 border-pink-500/30 hover:bg-pink-500/30' 
+                      : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:text-white'
+                  }`}
+              >
+                {isSaving ? "⏳ Saving..." : isSaved ? "♥ Remove from Wishlist" : "♡ Add to Wishlist"}
+              </button>
+              {saveError && (
+                <p className="text-center text-xs text-red-400 mt-1">Unable to save product. Please try again.</p>
               )}
             </div>
           </div>
