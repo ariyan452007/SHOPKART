@@ -1,0 +1,32 @@
+{
+  "name": "shopkart-backend",
+  "version": "1.0.0",
+  "description": "ShopKart Customer Authentication Service - MVC Architecture with Express, MongoDB, bcrypt, and JWT",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "seed": "node utils/seed.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.4"
+  },
+  "keywords": [
+    "shopkart",
+    "authentication",
+    "jwt",
+    "httponly-cookie",
+    "bcrypt",
+    "mvc",
+    "express",
+    "mongodb"
+  ],
+  "author": "ShopKart Engineering Team",
+  "license": "ISC"
+}
