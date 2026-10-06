@@ -141,9 +141,50 @@ const removeFromCart = async (req, res) => {
   }
 };
 
+const checkout = async (req, res) => {
+  try {
+    const customer = await Customer.findById(req.user._id).populate("cart.product");
+    
+    if (!customer || customer.cart.length === 0) {
+      return res.status(400).json({ success: false, message: "Cart is empty" });
+    }
+
+    // 1. Verify stock for all items
+    for (const item of customer.cart) {
+      if (!item.product) {
+        return res.status(400).json({ success: false, message: "A product in your cart no longer exists" });
+      }
+      if (item.product.stock < item.quantity) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Not enough stock for ${item.product.name}. Available: ${item.product.stock}` 
+        });
+      }
+    }
+
+    // 2. Decrement stock for all items
+    const bulkOps = customer.cart.map(item => ({
+      updateOne: {
+        filter: { _id: item.product._id },
+        update: { $inc: { stock: -item.quantity } }
+      }
+    }));
+    await Product.bulkWrite(bulkOps);
+
+    // 3. Clear customer cart
+    customer.cart = [];
+    await customer.save();
+
+    return res.status(200).json({ success: true, message: "Order placed successfully!" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   addToCart,
   getCart,
   updateQuantity,
-  removeFromCart
+  removeFromCart,
+  checkout
 };

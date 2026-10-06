@@ -71,8 +71,20 @@ const protect = async (req, res, next) => {
   }
 };
 
+const admin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: "Forbidden: Admin privileges required"
+    });
+  }
+};
+
 // Allow both `const protect = require(...)` and `const { protect } = require(...)`
 protect.protect = protect;
 protect.authMiddleware = protect;
+protect.admin = admin;
 
 module.exports = protect;

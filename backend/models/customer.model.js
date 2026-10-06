@@ -37,6 +37,10 @@ const customerSchema = new mongoose.Schema(
       required: [true, "Phone number is required"],
       trim: true
     },
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
     wishlist: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
       default: []

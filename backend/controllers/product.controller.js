@@ -45,12 +45,27 @@ const getProducts = async (req, res) => {
       sortOption = { price: -1 };
     }
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalProducts = await Product.countDocuments(filter);
+
     const products = await Product.find(filter)
       .select("name price category image stock createdAt")
       .sort(sortOption)
+      .skip(skip)
+      .limit(limit)
       .lean();
 
-    res.status(200).json({ success: true, count: products.length, products });
+    res.status(200).json({ 
+      success: true, 
+      count: products.length, 
+      total: totalProducts,
+      page,
+      totalPages: Math.ceil(totalProducts / limit),
+      products 
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
