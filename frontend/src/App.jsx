@@ -9,6 +9,11 @@ import ProductDetails from './pages/ProductDetails'
 import Wishlist from './pages/Wishlist'
 import Cart from './pages/Cart'
 
+import Checkout from './pages/Checkout'
+import OrderSuccess from './pages/OrderSuccess'
+import Orders from './pages/Orders'
+import OrderDetails from './pages/OrderDetails'
+
 function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans flex flex-col">
@@ -22,6 +27,10 @@ function App() {
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-success/:id" element={<OrderSuccess />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/orders/:id" element={<OrderDetails />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

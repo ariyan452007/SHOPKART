@@ -35,11 +35,23 @@ const generateToken = (customerId) => {
  */
 const getCookieOptions = () => {
   const cookieDays = parseInt(process.env.COOKIE_EXPIRES_DAYS, 10) || 7;
+  const maxAge = cookieDays * 24 * 60 * 60 * 1000;
+
+  if (process.env.NODE_ENV === "production") {
+    return {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge
+    };
+  }
+
   return {
-    httpOnly: true, // Prevents client-side scripts from accessing the cookie
-    secure: process.env.NODE_ENV === "production", // HTTPS only in production
-    sameSite: process.env.COOKIE_SAME_SITE || "strict", // Strict CSRF protection
-    maxAge: cookieDays * 24 * 60 * 60 * 1000 // Lifespan in milliseconds (e.g. 7 days)
+    httpOnly: true,
+    secure: false,
+    sameSite: process.env.COOKIE_SAME_SITE || "strict",
+    maxAge
   };
 };
 
@@ -57,11 +69,7 @@ const setTokenCookie = (res, token) => {
  * @param {import('express').Response} res - Express response object
  */
 const clearTokenCookie = (res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.COOKIE_SAME_SITE || "strict"
-  });
+  res.clearCookie("token", getCookieOptions());
 };
 
 // Support both `const generateToken = require(...)` and `const { generateToken, setTokenCookie } = require(...)`

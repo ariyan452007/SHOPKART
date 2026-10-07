@@ -46,3 +46,8 @@ export const getCart = (signal) => api.get('/cart', { signal });
 export const addToCartApi = (productId) => api.post(`/cart/${productId}`);
 export const updateCartQuantity = (productId, quantity) => api.patch(`/cart/${productId}`, { quantity });
 export const removeFromCartApi = (productId) => api.delete(`/cart/${productId}`);
+
+export const createPaymentOrder = (shippingAddress) => api.post('/orders/create-payment-order', { shippingAddress });
+export const verifyPayment = (payload) => api.post('/orders/verify-payment', payload);
+export const getOrders = (signal) => api.get('/orders', { signal });
+export const getOrderById = (id, signal) => api.get(`/orders/${id}`, { signal });

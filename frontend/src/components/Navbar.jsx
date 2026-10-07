@@ -89,9 +89,15 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/cart"
-                  className={`text-sm font-medium transition-colors ${isCartPage ? 'text-white' : 'text-gray-300 hover:text-white'}`}
+                  className={`text-sm font-medium transition-colors ${isCartPage || location.pathname === '/checkout' ? 'text-white' : 'text-gray-300 hover:text-white'}`}
                 >
                   Cart {itemCount > 0 ? `(${itemCount})` : ''}
+                </Link>
+                <Link
+                  to="/orders"
+                  className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/orders') || location.pathname.startsWith('/order-success') ? 'text-white' : 'text-gray-300 hover:text-white'}`}
+                >
+                  Orders
                 </Link>
                 <button
                   onClick={handleLogout}

@@ -96,7 +96,7 @@ const Cart = () => {
             </div>
             
             <button
-              onClick={() => setCheckoutNotice(true)}
+              onClick={() => navigate('/checkout')}
               disabled={hasInvalidItems}
               className={`w-full py-3.5 rounded-xl font-bold text-lg shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900
                 ${hasInvalidItems
@@ -110,12 +110,6 @@ const Cart = () => {
             {hasInvalidItems && (
               <p className="mt-3 text-center text-sm text-amber-400 font-medium">
                 Update quantities to match available stock
-              </p>
-            )}
-            
-            {checkoutNotice && !hasInvalidItems && (
-              <p className="mt-3 text-center text-sm text-indigo-300 animate-pulse bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">
-                Checkout will be available in the next lab.
               </p>
             )}
           </div>

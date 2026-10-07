@@ -19,10 +19,14 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/shopkart";
  * 1. express.json(): Parses incoming HTTP request bodies containing JSON data into req.body.
  * 2. cookieParser(): Parses cookies attached to incoming request headers into req.cookies.
  */
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"] : ["http://localhost:5173", "http://127.0.0.1:5173"],
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173", ...(process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(",").map(s => s.trim()).filter(Boolean) : [])],
   credentials: true
 }));
 
@@ -38,6 +42,9 @@ app.use("/customers", customerRoutes);
 app.use("/products", productRoutes);
 app.use("/wishlist", wishlistRoutes);
 app.use("/cart", cartRoutes);
+
+const orderRoutes = require("./routes/order.routes");
+app.use("/orders", orderRoutes);
 
 /**
  * Root / Health Check Route
