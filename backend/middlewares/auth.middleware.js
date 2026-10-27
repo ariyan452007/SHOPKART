@@ -65,8 +65,7 @@ const protect = async (req, res, next) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Server error during authentication",
-      error: error.message
+      message: "Server error during authentication"
     });
   }
 };

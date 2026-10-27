@@ -17,7 +17,7 @@ const Home = () => {
         } else {
           navigate('/login');
         }
-      } catch (error) {
+      } catch {
         navigate('/login');
       } finally {
         setLoading(false);
@@ -51,7 +51,7 @@ const Home = () => {
             Welcome back, {user?.fullName}!
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-300">
-            You have successfully authenticated using HttpOnly cookies. Your profile details are securely fetched from the backend.
+            Discover products, save favourites to your wishlist, check out securely with Razorpay and track every order from placement to delivery.
           </p>
           
           <div className="mt-10 mx-auto max-w-md glass rounded-2xl p-8 text-left shadow-2xl shadow-black/50 border border-white/10">
@@ -76,13 +76,27 @@ const Home = () => {
             </dl>
           </div>
           
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => navigate('/products')}
-              className="group relative flex justify-center rounded-lg bg-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 transition-all active:scale-[0.98]"
+              className="rounded-lg bg-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 transition-all active:scale-[0.98]"
             >
               Browse Products
             </button>
+            <button
+              onClick={() => navigate('/orders')}
+              className="rounded-lg bg-white/10 px-6 py-3 text-sm font-semibold text-white border border-white/10 hover:bg-white/20 transition-all active:scale-[0.98]"
+            >
+              My Orders
+            </button>
+            {user?.isAdmin && (
+              <button
+                onClick={() => navigate('/admin')}
+                className="rounded-lg bg-amber-500/15 px-6 py-3 text-sm font-semibold text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition-all active:scale-[0.98]"
+              >
+                Admin Dashboard
+              </button>
+            )}
           </div>
         </div>
       </div>

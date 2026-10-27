@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getMe, getProductById, getErrorMessage, getWishlist, toggleWishlist } from '../services/api';
 import { useCart } from '../context/CartContext';
 import axios from 'axios';
+import { handleImageError } from '../utils/placeholder';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -26,7 +27,7 @@ const ProductDetails = () => {
       try {
         await getMe();
         setAuthLoading(false);
-      } catch (err) {
+      } catch {
         navigate('/login', { replace: true });
         return;
       }
@@ -37,7 +38,7 @@ const ProductDetails = () => {
           const ids = new Set(res.data.wishlist.map(w => w._id));
           setIsSaved(ids.has(id));
         }
-      } catch (err) {
+      } catch {
         // silent fail
       }
     };
@@ -118,9 +119,6 @@ const ProductDetails = () => {
     }
   };
 
-  const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/1200x800?text=No+Image';
-  };
 
   if (authLoading) {
     return (

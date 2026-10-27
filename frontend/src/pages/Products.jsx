@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMe, getProducts } from '../services/api';
+import { getMe, getProducts, getWishlist, getCategories } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
 import axios from 'axios';
+
+const PAGE_SIZE = 8;
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -18,6 +20,9 @@ const Products = () => {
   const [retryCount, setRetryCount] = useState(0);
   
   const [count, setCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [categories, setCategories] = useState([]);
   const [savedIds, setSavedIds] = useState(new Set());
   const navigate = useNavigate();
 
@@ -27,7 +32,7 @@ const Products = () => {
       try {
         await getMe();
         setAuthLoading(false);
-      } catch (err) {
+      } catch {
         navigate('/login', { replace: true });
         return;
       }
@@ -38,17 +43,27 @@ const Products = () => {
           const ids = new Set(res.data.wishlist.map(w => w._id));
           setSavedIds(ids);
         }
-      } catch (err) {
+      } catch {
         // Silent fail for wishlist fetch; grid still works with default state
       }
     };
     verifyAuth();
   }, [navigate]);
 
+  // Categories come from the catalogue so new admin-created categories show up automatically
+  useEffect(() => {
+    const abortController = new AbortController();
+    getCategories(abortController.signal)
+      .then(res => setCategories(res.data.categories || []))
+      .catch(() => {});
+    return () => abortController.abort();
+  }, []);
+
   // Debounce search
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
+      setPage(1);
     }, 400);
     return () => clearTimeout(handler);
   }, [search]);
@@ -64,11 +79,12 @@ const Products = () => {
       setError(false);
       try {
         const res = await getProducts(
-          { search: debouncedSearch, category, sort }, 
+          { search: debouncedSearch, category, sort, page, limit: PAGE_SIZE }, 
           abortController.signal
         );
         setProducts(res.data.products);
-        setCount(res.data.count);
+        setCount(res.data.total ?? res.data.count);
+        setTotalPages(res.data.totalPages || 1);
       } catch (err) {
         if (axios.isCancel(err) || err.code === "ERR_CANCELED") return;
         setError(true);
@@ -80,7 +96,7 @@ const Products = () => {
     fetchProducts();
     
     return () => abortController.abort();
-  }, [debouncedSearch, category, sort, authLoading, retryCount]);
+  }, [debouncedSearch, category, sort, page, authLoading, retryCount]);
 
   const handleWishlistChange = (productId, isSaved) => {
     setSavedIds(prev => {
@@ -114,19 +130,16 @@ const Products = () => {
           <div className="flex gap-2 w-full sm:w-auto">
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => { setCategory(e.target.value); setPage(1); }}
               className="block w-full sm:w-auto rounded-lg border-0 bg-white/5 py-2.5 pl-3 pr-8 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
             >
               <option value="">All Categories</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Fashion">Fashion</option>
-              <option value="Books">Books</option>
-              <option value="Home">Home</option>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value)}
+              onChange={(e) => { setSort(e.target.value); setPage(1); }}
               className="block w-full sm:w-auto rounded-lg border-0 bg-white/5 py-2.5 pl-3 pr-8 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
             >
               <option value="">Newest</option>
@@ -170,6 +183,35 @@ const Products = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map(p => <ProductCard key={p._id} product={p} isWishlisted={savedIds.has(p._id)} onWishlistChange={handleWishlistChange} />)}
         </div>
+      )}
+
+      {!loading && !error && totalPages > 1 && (
+        <nav className="mt-10 flex items-center justify-center gap-2" aria-label="Pagination">
+          <button
+            onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            disabled={page <= 1}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-white/5 text-gray-200 border border-white/10 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            &larr; Prev
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+            <button
+              key={n}
+              onClick={() => { setPage(n); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              aria-current={n === page ? 'page' : undefined}
+              className={`w-10 h-10 rounded-lg text-sm font-semibold border transition-colors ${n === page ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'}`}
+            >
+              {n}
+            </button>
+          ))}
+          <button
+            onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            disabled={page >= totalPages}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-white/5 text-gray-200 border border-white/10 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Next &rarr;
+          </button>
+        </nav>
       )}
     </div>
   );

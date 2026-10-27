@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import CheckoutForm from '../components/CheckoutForm';
 import OrderSummary from '../components/OrderSummary';
 import { loadRazorpayScript } from '../utils/razorpay';
-import { createPaymentOrder, verifyPayment } from '../services/api';
+import { createPaymentOrder, verifyPayment, getErrorMessage } from '../services/api';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -110,7 +110,13 @@ const Checkout = () => {
             await refreshCart();
             navigate(`/order-success/${data.shopKartOrderId}`, { replace: true });
           } catch (err) {
-            setApiError("Payment could not be verified. Your cart has not been cleared.");
+            if (err.response?.status === 409) {
+              // An item sold out while paying; the server cancelled and refunded the order
+              setApiError(getErrorMessage(err));
+              await refreshCart();
+            } else {
+              setApiError("Payment could not be verified. Your cart has not been cleared.");
+            }
             setButtonState('idle');
             isPaying.current = false;
           }

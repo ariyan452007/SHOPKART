@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { removeFromWishlist } from '../services/api';
+import { handleImageError } from '../utils/placeholder';
 
 const WishlistCard = ({ product, onRemove }) => {
   const navigate = useNavigate();
   const [isRemoving, setIsRemoving] = useState(false);
   const [error, setError] = useState(false);
 
-  const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/600x400?text=No+Image';
-  };
 
   const getStockStatus = (stock) => {
     if (stock === 0) return <span className="text-red-400 font-medium text-sm">Out of stock</span>;

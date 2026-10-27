@@ -5,15 +5,16 @@ const {
   createPaymentOrder,
   verifyPayment,
   getOrders,
-  getOrderById
+  getOrderById,
+  cancelMyOrder
 } = require("../controllers/order.controller");
 
 router.use(protect);
 
 router.post("/create-payment-order", createPaymentOrder);
 router.post("/verify-payment", verifyPayment);
-router.post("/", createPaymentOrder);
 router.get("/", getOrders);
 router.get("/:id", getOrderById);
+router.patch("/:id/cancel", cancelMyOrder);
 
 module.exports = router;

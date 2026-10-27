@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginCustomer, getErrorMessage } from '../services/api';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -9,6 +10,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { refreshCart } = useCart();
+  const { refreshUser } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,7 +25,7 @@ const Login = () => {
 
     try {
       await loginCustomer(formData);
-      await refreshCart(); // Ensure cart is fresh for new user
+      await Promise.all([refreshCart(), refreshUser()]); // Fresh cart + profile for the new session
       navigate('/home');
     } catch (err) {
       setError(getErrorMessage(err));

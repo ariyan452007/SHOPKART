@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 const CheckoutForm = ({ shippingAddress, setShippingAddress, setErrors, errors }) => {
   const handleChange = (e) => {

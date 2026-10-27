@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { STATUS_STYLES, formatStatus } from '../utils/orderStatus';
 
 const OrderCard = ({ order }) => {
   const shortId = order._id.slice(-8);
@@ -7,24 +8,14 @@ const OrderCard = ({ order }) => {
     day: 'numeric', month: 'short', year: 'numeric'
   });
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'PLACED': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'CONFIRMED': return 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30';
-      case 'SHIPPED': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      case 'DELIVERED': return 'bg-green-500/20 text-green-400 border-green-500/30';
-      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-    }
-  };
-
   return (
     <div className="glass rounded-2xl p-6 border border-white/5 shadow-xl shadow-black/50 hover:border-white/10 transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-4 mb-4 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <span className="font-mono text-gray-300 font-medium">#{shortId}</span>
-            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getStatusColor(order.status)}`}>
-              {order.status}
+            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[order.status] || STATUS_STYLES.PENDING_PAYMENT}`}>
+              {formatStatus(order.status)}
             </span>
           </div>
           <p className="text-sm text-gray-500">Ordered on {dateStr}</p>

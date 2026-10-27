@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toggleWishlist } from '../services/api';
 import { useCart } from '../context/CartContext';
+import { handleImageError } from '../utils/placeholder';
 
 const ProductCard = ({ product, isWishlisted = false, onWishlistChange }) => {
   const navigate = useNavigate();
@@ -22,9 +23,6 @@ const ProductCard = ({ product, isWishlisted = false, onWishlistChange }) => {
     setSaved(isWishlisted);
   }, [isWishlisted]);
 
-  const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/600x400?text=No+Image';
-  };
 
   const handleAddToCart = async () => {
     setCartError('');

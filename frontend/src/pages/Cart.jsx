@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import CartItem from '../components/CartItem';
@@ -6,7 +6,6 @@ import CartItem from '../components/CartItem';
 const Cart = () => {
   const navigate = useNavigate();
   const { cartItems, loading, error, refreshCart, itemCount, subtotal } = useCart();
-  const [checkoutNotice, setCheckoutNotice] = useState(false);
 
   useEffect(() => {
     const init = async () => {

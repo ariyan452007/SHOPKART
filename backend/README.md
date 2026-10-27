@@ -123,7 +123,7 @@ The application is configured using a `.env` file at the root of `backend/`:
 | `PORT` | Port number the Express HTTP server listens on (default 5001 to avoid macOS AirPlay conflict on 5000) | `5001` |
 | `NODE_ENV` | Runtime environment (`development` or `production`) | `development` |
 | `MONGO_URI` | MongoDB connection connection string | `mongodb://127.0.0.1:27017/shopkart` |
-| `JWT_SECRET` | Secret key used to cryptographically sign JWT tokens | `shopkart_jwt_super_secure_secret_key_2026_exam_ready` |
+| `JWT_SECRET` | Secret key used to cryptographically sign JWT tokens | `<long random string — never commit the real one>` |
 | `JWT_EXPIRES_IN` | Token validity duration | `7d` |
 | `COOKIE_EXPIRES_DAYS` | HttpOnly cookie expiration in days | `7` |
 | `COOKIE_SAME_SITE` | CSRF cookie protection attribute | `strict` |

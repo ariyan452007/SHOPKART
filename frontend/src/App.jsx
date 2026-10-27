@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Login from './pages/Login'
@@ -13,8 +13,13 @@ import Checkout from './pages/Checkout'
 import OrderSuccess from './pages/OrderSuccess'
 import Orders from './pages/Orders'
 import OrderDetails from './pages/OrderDetails'
+import Admin from './pages/Admin'
+import { wakeServer } from './services/api'
 
 function App() {
+  // Start waking the (free-tier) backend as soon as the app loads
+  useEffect(() => { wakeServer(); }, []);
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans flex flex-col">
       <Navbar />
@@ -31,6 +36,7 @@ function App() {
           <Route path="/order-success/:id" element={<OrderSuccess />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

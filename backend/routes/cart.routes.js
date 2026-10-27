@@ -5,14 +5,12 @@ const {
   addToCart,
   getCart,
   updateQuantity,
-  removeFromCart,
-  checkout
+  removeFromCart
 } = require("../controllers/cart.controller");
 
 router.use(protect);
 
 router.get("/", getCart);
-router.post("/checkout", checkout);
 router.post("/:productId", addToCart);
 router.patch("/:productId", updateQuantity);
 router.delete("/:productId", removeFromCart);

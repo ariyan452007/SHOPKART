@@ -8,6 +8,7 @@ const {
   changePassword
 } = require("../controllers/customer.controller");
 const protect = require("../middlewares/auth.middleware");
+const { loginLimiter } = require("../middlewares/rateLimit.middleware");
 
 /**
  * Customer Authentication & Profile Routes
@@ -25,7 +26,7 @@ const protect = require("../middlewares/auth.middleware");
 
 // Public Routes
 router.post("/register", registerCustomer);
-router.post("/login", loginCustomer);
+router.post("/login", loginLimiter, loginCustomer);
 
 // Protected Routes
 router.get("/me", protect, getMyProfile);

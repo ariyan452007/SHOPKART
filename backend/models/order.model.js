@@ -27,18 +27,39 @@ const orderSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
   paymentStatus: {
     type: String,
-    enum: ["PENDING", "PAID", "FAILED"],
+    enum: ["PENDING", "PAID", "FAILED", "REFUNDED", "REFUND_PENDING"],
     default: "PENDING"
   },
   status: {
     type: String,
-    enum: ["PENDING_PAYMENT", "PLACED", "CONFIRMED", "SHIPPED", "DELIVERED"],
-    default: "PENDING_PAYMENT"
+    enum: ["PENDING_PAYMENT", "PLACED", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"],
+    default: "PENDING_PAYMENT",
+    index: true
   },
+  statusHistory: [{
+    status: { type: String, required: true },
+    at: { type: Date, default: Date.now },
+    note: { type: String }
+  }],
+  cancelReason: { type: String, trim: true },
   razorpayOrderId: { type: String },
-  razorpayPaymentId: { type: String }
+  razorpayPaymentId: { type: String },
+  razorpayRefundId: { type: String }
 }, {
   timestamps: true
 });
+
+/**
+ * Order lifecycle: which status an order may move to next.
+ * CANCELLED is terminal and only reachable before the order ships.
+ */
+orderSchema.statics.TRANSITIONS = {
+  PLACED: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["SHIPPED", "CANCELLED"],
+  SHIPPED: ["DELIVERED"],
+  DELIVERED: [],
+  CANCELLED: [],
+  PENDING_PAYMENT: []
+};
 
 module.exports = mongoose.models.Order || mongoose.model("Order", orderSchema);

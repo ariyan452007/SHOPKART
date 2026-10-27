@@ -28,6 +28,13 @@ const seedDatabase = async () => {
     await mongoose.connect(MONGO_URI);
     console.log("Connected to MongoDB for seeding...");
     
+    const existing = await Product.countDocuments();
+    if (existing > 0 && !process.argv.includes("--force")) {
+      console.log(`Database already has ${existing} products. Re-run with --force to wipe and reseed.`);
+      await mongoose.disconnect();
+      process.exit(0);
+    }
+
     await Product.deleteMany({});
     console.log("Cleared existing products.");
     

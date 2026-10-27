@@ -1,12 +1,14 @@
 {
   "name": "shopkart-backend",
   "version": "1.0.0",
-  "description": "ShopKart Customer Authentication Service - MVC Architecture with Express, MongoDB, bcrypt, and JWT",
+  "description": "ShopKart REST API - auth, catalogue, cart, wishlist, Razorpay checkout, order lifecycle and admin dashboard",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
-    "seed": "node utils/seed.js"
+    "seed": "node utils/seed.js",
+    "create-admin": "node scripts/createAdmin.js",
+    "test": "node --test --test-concurrency=1 \"tests/**/*.test.js\""
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -14,20 +16,26 @@
     "cors": "^2.8.6",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.4",
     "razorpay": "^2.9.8"
   },
   "keywords": [
     "shopkart",
-    "authentication",
-    "jwt",
-    "httponly-cookie",
-    "bcrypt",
-    "mvc",
+    "ecommerce",
     "express",
-    "mongodb"
+    "mongodb",
+    "jwt",
+    "razorpay"
   ],
   "author": "ShopKart Engineering Team",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "supertest": "^7.3.1"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
 }

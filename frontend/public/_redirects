@@ -1,1 +1,4 @@
-/* /index.html 200
+# Proxy API calls to the Render backend so the auth cookie stays first-party
+/api/*  https://shopkart-backend-4dcc.onrender.com/:splat  200
+# SPA fallback: let React Router handle every other path
+/*      /index.html  200

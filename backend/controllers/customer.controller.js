@@ -91,8 +91,7 @@ const registerCustomer = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Internal server error during registration",
-      error: error.message
+      message: "Internal server error during registration"
     });
   }
 };
@@ -150,8 +149,7 @@ const loginCustomer = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error during login",
-      error: error.message
+      message: "Internal server error during login"
     });
   }
 };
@@ -169,13 +167,13 @@ const getMyProfile = async (req, res) => {
       _id: req.user._id,
       fullName: req.user.fullName,
       email: req.user.email,
-      phone: req.user.phone
+      phone: req.user.phone,
+      isAdmin: Boolean(req.user.isAdmin)
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error while fetching profile",
-      error: error.message
+      message: "Internal server error while fetching profile"
     });
   }
 };
@@ -197,8 +195,7 @@ const logoutCustomer = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error during logout",
-      error: error.message
+      message: "Internal server error during logout"
     });
   }
 };
@@ -268,8 +265,7 @@ const changePassword = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error while changing password",
-      error: error.message
+      message: "Internal server error while changing password"
     });
   }
 };

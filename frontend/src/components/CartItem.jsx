@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { handleImageError } from '../utils/placeholder';
 
 const CartItem = ({ item }) => {
   const { product, quantity } = item;
@@ -34,9 +35,6 @@ const CartItem = ({ item }) => {
     if (!res.success) setError(res.message || "Failed to update");
   };
 
-  const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
-  };
 
   const stockWarning = product.stock === 0 || quantity > product.stock;
 

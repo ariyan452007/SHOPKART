@@ -26,7 +26,7 @@ const addToWishlist = async (req, res) => {
 
     return res.status(201).json({ success: true, message: "Product added to wishlist" });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -50,7 +50,7 @@ const getWishlist = async (req, res) => {
       wishlist 
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -73,7 +73,7 @@ const removeFromWishlist = async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Product removed from wishlist" });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -109,7 +109,7 @@ const toggleWishlist = async (req, res) => {
       return res.status(200).json({ success: true, saved: true, message: "Product added to wishlist" });
     }
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -120,7 +120,7 @@ const getWishlistCount = async (req, res) => {
     
     return res.status(200).json({ success: true, count });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

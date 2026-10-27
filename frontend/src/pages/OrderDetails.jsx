@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getOrderById } from '../services/api';
+import { getOrderById, cancelOrder, getErrorMessage } from '../services/api';
+import { STATUS_STYLES, PAYMENT_STYLES, FULFILMENT_STEPS, formatStatus, canCustomerCancel } from '../utils/orderStatus';
+import { PLACEHOLDER_IMAGE, handleImageError } from '../utils/placeholder';
 
 const OrderDetails = () => {
   const { id } = useParams();
@@ -8,6 +10,10 @@ const OrderDetails = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelMessage, setCancelMessage] = useState('');
+  const [cancelError, setCancelError] = useState('');
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -53,6 +59,25 @@ const OrderDetails = () => {
     );
   }
 
+  const handleCancel = async () => {
+    setCancelling(true);
+    setCancelError('');
+    try {
+      const res = await cancelOrder(order._id);
+      setOrder(res.data.order);
+      setCancelMessage(res.data.message);
+      setConfirmingCancel(false);
+    } catch (err) {
+      setCancelError(getErrorMessage(err));
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const historyFor = (status) => order.statusHistory?.find(h => h.status === status);
+  const isCancelled = order.status === 'CANCELLED';
+  const reachedIndex = FULFILMENT_STEPS.indexOf(order.status);
+
   const dateStr = new Date(order.createdAt).toLocaleDateString("en-IN", {
     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
   });
@@ -90,7 +115,8 @@ const OrderDetails = () => {
                 <div key={idx} className="flex gap-4 p-4 rounded-xl bg-white/5 border border-white/5">
                   <div className="w-20 h-20 shrink-0 bg-gray-800 rounded-lg overflow-hidden border border-white/10">
                     <img 
-                      src={item.image || `https://via.placeholder.com/150/1f2937/a5b4fc?text=${encodeURIComponent(item.name)}`} 
+                      src={item.image || PLACEHOLDER_IMAGE}
+                      onError={handleImageError} 
                       alt={item.name} 
                       className="w-full h-full object-cover"
                     />
@@ -116,13 +142,13 @@ const OrderDetails = () => {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-400">Status</span>
-                <span className={`font-bold ${order.paymentStatus === 'PAID' ? 'text-green-400' : 'text-amber-400'}`}>
-                  {order.paymentStatus}
+                <span className={`font-bold ${PAYMENT_STYLES[order.paymentStatus] || 'text-amber-400'}`}>
+                  {formatStatus(order.paymentStatus)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Order Status</span>
-                <span className="text-white font-medium">{order.status}</span>
+                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[order.status] || ''}`}>{formatStatus(order.status)}</span>
               </div>
               {order.razorpayPaymentId && (
                 <div className="flex flex-col pt-3 border-t border-white/10">
@@ -135,6 +161,77 @@ const OrderDetails = () => {
                 <span className="text-xl font-bold text-indigo-400">₹{order.totalAmount.toLocaleString("en-IN")}</span>
               </div>
             </div>
+          </div>
+
+          <div className="glass rounded-2xl p-6 border border-white/5 shadow-xl shadow-black/50">
+            <h2 className="text-lg font-bold text-white mb-4">Order Tracking</h2>
+            {isCancelled ? (
+              <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4 text-sm">
+                <p className="font-bold text-red-300">Order cancelled</p>
+                {order.cancelReason && <p className="text-gray-300 mt-1">{order.cancelReason}</p>}
+                <p className="text-gray-400 mt-2">
+                  {order.paymentStatus === 'REFUNDED'
+                    ? `Refund of ₹${order.totalAmount.toLocaleString("en-IN")} issued to your original payment method.`
+                    : 'Your refund is being processed.'}
+                </p>
+              </div>
+            ) : (
+              <ol className="relative border-l border-white/10 ml-2 space-y-5">
+                {FULFILMENT_STEPS.map((step, idx) => {
+                  const done = idx <= reachedIndex;
+                  const entry = historyFor(step);
+                  return (
+                    <li key={step} className="ml-5">
+                      <span className={`absolute -left-[7px] w-3.5 h-3.5 rounded-full border-2 ${done ? 'bg-indigo-500 border-indigo-300' : 'bg-gray-800 border-gray-600'}`} />
+                      <p className={`text-sm font-semibold ${done ? 'text-white' : 'text-gray-500'}`}>{formatStatus(step)}</p>
+                      {entry && (
+                        <p className="text-xs text-gray-400">
+                          {new Date(entry.at).toLocaleString("en-IN", { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+
+            {cancelMessage && (
+              <p className="mt-4 text-sm text-green-300 bg-green-500/10 border border-green-500/20 rounded-lg p-2">{cancelMessage}</p>
+            )}
+
+            {canCustomerCancel(order) && (
+              <div className="mt-6 pt-4 border-t border-white/10">
+                {confirmingCancel ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-300">Cancel this order? Your payment will be refunded.</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleCancel}
+                        disabled={cancelling}
+                        className="flex-1 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-400 disabled:opacity-60"
+                      >
+                        {cancelling ? 'Cancelling...' : 'Yes, cancel'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmingCancel(false)}
+                        disabled={cancelling}
+                        className="flex-1 py-2 rounded-lg text-sm font-medium bg-white/5 text-gray-200 border border-white/10 hover:bg-white/10"
+                      >
+                        Keep order
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmingCancel(true)}
+                    className="w-full py-2 rounded-lg text-sm font-medium text-red-300 border border-red-500/30 hover:bg-red-500/10"
+                  >
+                    Cancel order
+                  </button>
+                )}
+                {cancelError && <p className="mt-2 text-sm text-red-400">{cancelError}</p>}
+              </div>
+            )}
           </div>
 
           <div className="glass rounded-2xl p-6 border border-white/5 shadow-xl shadow-black/50">
