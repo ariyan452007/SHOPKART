@@ -6,7 +6,7 @@ ShopKart is a working online store: customers browse a catalogue, keep a wishlis
 |---|---|
 | **Live app** | https://shopkkk.netlify.app |
 | **API** | https://shopkart-backend-4dcc.onrender.com/health |
-| **Demo video** | _add your video link here_ |
+
 
 > The API runs on Render's free tier and sleeps when idle. The first request can take 30–60 s while it wakes up; the frontend retries automatically.
 
